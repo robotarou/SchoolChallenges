@@ -1,0 +1,133 @@
+\documentclass{jsarticle}                                                   
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\fancypagestyle{mypagestyle}{%
+    \lhead{}%ヘッダ左を空に
+    \rhead{
+        未来ロボティクス学科\\                                                          
+        1526084 
+    }%ヘッダ右を空に
+    \cfoot{---\ \thepage/\pageref{LastPage}\ ---}%フッタ中央に"今のページ数/総ページ数"を設定
+    \renewcommand{\headrulewidth}{0.0pt}%ヘッダの線を消す
+}
+\pagestyle{mypagestyle}
+
+\title{
+    \scriptsize{ディジタル信号処理}\\
+    \Huge{フーリエ変換}
+}
+\author{中島 崇晴}
+\date{提出日 2016年12月19日}
+
+\begin{document} 
+    \maketitle
+    \thispagestyle{mypagestyle}%タイトルページ等ではpagestyleが変更されるので改めて設定する
+
+    \section{目的}
+    与えられたデータ（信号波形）を入力とし，それを
+    離散フーリエ変換（DFT）で処置をしてパワースペクトルを出力する．
+
+    また，その持つ意味とその他に関して，信号処理の見地から解説及び考察を加える．
+
+    \section{理論}
+    DFTとは，離散化されたフーリエ変換，つまり，連続フーリエ変換のディジタル化である．\\
+    離散フーリエ変換とは，複素関数 $x(t)$を複素関数  
+    $X(f)$に写す写像であって，次の式(1)で定義されるものを言う．
+    \begin{equation}
+        X(n) = \sum^{N-1}_{k=0}x(k)\mathrm{e}^{-\frac{j2\pi kn}{N}}
+    \end{equation}
+
+    また，DFTは計算機上で高速フーリエ変換（FFT）を使って高速に計算することができる．
+    \vspace{1zh}
+
+    パワースペクトルとは，時間信号 $x(t)$のパワーを，FFT分析することによりある
+    周波数バンド幅（すなわち周波数分解能 $\Delta f$ ）毎のパワーをもとめ，
+    横軸を周波数としてグラフ化しているものである．
+
+    パワースペクトル $P(f)$は，
+    \begin{equation}
+        P(f) = |X(f)|^2 = X(f)*X(f)
+    \end{equation}
+    \begin{center}
+        \scriptsize{（$* $は複素共役を表す）}
+    \end{center}
+    で求められる．
+    \vspace{1zh}    
+
+    窓関数は，ある有限区間以外で0となる関数である． 
+    ある関数や信号に窓関数が掛け合わせられると，区間外は0になり，
+    有限区間内だけが残るので，数値解析が容易になる．
+
+    $
+    フーリエ変換では，関数 f(x), も三角関数も，無限区間 (-\infty ,\infty ) で
+    定義されている． しかし，実データを数値的にフーリエ変換するなら，
+    無限の長さは扱えないので，有限区間 [a,b], でフーリエ変換をおこない，
+    区間外は無視することになる． これは，関数 f(x), を区間外で0とみなすことに等しい
+    （「区間内のデータを周期的に繰り返す」という表現をすることもあるが，
+    DFTの場合はこの2つは等価である）．
+    $
+
+    つまり，関数$f(x)$と関数
+    \begin{equation}
+        w(x) = \left\{ \begin{array}{ll}
+                1, if a \le x \le b\\
+                0, otherwise
+            \end{array} \right.
+    \end{equation}
+    $
+    の積 (wf)(x)=w(x)f(x), を求め，そのフーリエ変換 wf を，f の代わりに得ていることになる． 
+    このとき掛け合わせた関数 w(x), が窓関数である．
+    $
+
+    \section{内容及び方法}
+    MATLABの関数を使い信号波形をFFTで処理し，グラフに出力する．\\
+    今回の場合，MATLABはDFTではなくDFTの処理を高速化したFFTの
+    関数しかなく，それを使用した．
+
+    \section{結果}
+    与えられた信号波形をグラフで表したので下の図\ref{fig:Signal-waveform}である．
+    \begin{figure}[ht]
+        \begin{center}
+            \includegraphics[bb=0 0 560 420, width=5cm]{Signal-waveform.jpg}
+            \caption{信号波形}
+            \label{fig:Signal-waveform}
+        \end{center}
+    \end{figure}
+
+    %\newpage
+
+    図\ref{fig:Signal-waveform}の信号波形をFFTによって変換し，それをグラフに表したのが
+    下の図\ref{fig:fft}である．
+    \begin{figure}[ht]
+        \begin{center}
+            \includegraphics[bb=0 0 550 390, width=5cm]{fft.jpg}
+            \caption{FFTから出力された複素スペクトル}
+            \label{fig:fft}
+        \end{center}
+    \end{figure}
+
+    理論に基づき，図\ref{fig:fft}の複素スペクトルをパワースペクトルに変換したのが
+    下の図\ref{fig:Power-spectrum}である．
+    \begin{figure}[ht]
+        \begin{center}
+            \includegraphics[bb=0 0 560 420, width=5cm]{Power-spectrum.jpg}
+            \caption{パワースペクトル}
+            \label{fig:Power-spectrum}
+        \end{center}
+    \end{figure}
+
+    \vspace{3zh}
+
+    \section{考察}
+    今回，求められた結果を見ると時間軸では判別できなかった周波数の分布の違いを
+    検出することができており，複素スペクトルから求めたパワースペクトルは，
+    強さ・エネルギーを表していることがわかる．\\
+    例えば，パワースペクトルの形状から，測定領域やその領域上のノイズの多少を確認することができます．
+    図\ref{fig:Power-spectrum}を見ると，$0Hz付近と100Hz付近$の信号強度が大きくそれ以外，
+    は小さくなっていることがわかる．\\
+    また全体のパワースペクトル強度から，この条件では$0Hz付近と100Hz付近$以内の領域で
+    スペクトルが測定できることも確認できる．
+
+    \end{document}

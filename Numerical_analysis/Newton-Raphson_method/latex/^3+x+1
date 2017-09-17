@@ -1,0 +1,166 @@
+\documentclass{jsarticle}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{listings}
+\begin{document}
+
+\title{ニュートン法}
+\author{中島 崇晴}
+\date{提出日 2016年12月7日}
+\maketitle
+\begin{flushright}
+    {\large 未来ロボティクス・1526084}\\
+\end{flushright}
+
+\section{目的}
+ニュートン法のアルゴリズムを実装し，最低5種類の非線形方程式について解を求める。
+
+解を求めるだけでなく，以下の要素を含める。
+\begin{itemize}
+    \item 解の収束の過程が分かるように途中経過を出力する。
+    \item その結果をもとに，収束する様子をグラフで示す。
+    \item 解が複数存在する場合もすべての解が求まるようにプログラムを拡張する。
+\end{itemize}
+
+\section{理論}
+数値解析の分野において、ニュートン法またはニュートン・ラフソン法は、
+方程式系を数値掲載によって解くための反復法による求根アルゴリズムの一つである。
+
+ニュートン法では、以下の考え方に基づいて計算が行われる。
+
+$「f(x) = 0になるような値xを探す時、ある値x1における接線の切片x2は、元の値x1より真の値xに近くなる」$
+
+具体的にはまず, $f(x)=0$の解$\alpha$に近い値 $x_1$ を 1つとり, 関数 $y=f(x)$ のグラフ上の点  $(x_{1},f(x_1))$ における接線が，
+$x$軸と交わる点の $x$ 座標 を $x_2$ とする. このとき接線の方程式は,
+\begin{equation}
+    y = f'(x_1)(x-x_1)+f(x_1)
+\end{equation}
+となります. ここで $y=0$ とおいて, $x$ について解くと $x_2$ が求まる. \\
+なので、
+\begin{equation}
+    x_2=x_1-\frac{f(x_1)}{f'(x_1)}
+\end{equation}
+\\
+\\
+\\
+\\
+\\
+\begin{figure}
+    \centering
+    \includegraphics[bb=0 0 272 214, width=4cm]{img42.png}
+    \caption{ニュートン法}
+\end{figure}
+
+次に, 点$(x_2,f(x_2))$における曲線の接線と $x$軸との交点の$x$座標を$x_3$とし, この操作を繰り返すと, 以下の数列が出てくる 
+\begin{equation}
+    x_1, x_2, x_3, ..., x_n, ...
+\end{equation}
+よって、以下の漸化式が出てくる。
+\begin{equation}
+    x_n+1 = x_n - \frac{f(x_n)}{f'(x_n)}
+\end{equation}
+式(4)を使うことにより解が出てくる。
+
+\section{内容および方法}
+まず、ニュートン法で近似する5つの非線形方程式を準備する。
+\begin{eqnarray}
+    x^3 + x + 1\\
+    3x^3-6x^2-3x-6\\
+    2sin(x)-x\\
+    cos(x)-x^2\\
+    e^x + x
+\end{eqnarray}
+
+式(5)を式(4)に代入し計算する工程ををコードにおろしたのが以下のである。
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]
+double formula1(double ans)
+{
+    return (ans-(pow(ans,3.0)+ans+1.0)/(3.0*pow(ans,2.0)+1.0));
+}
+\end{lstlisting}
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]
+ans = 0.0;
+ans_new = formula1(ans);
+while(fabs(ans-ans_new) > EPS){
+    ans_new = ans;
+    ans = formula1(ans_new);
+}
+\end{lstlisting}
+
+更に、複数解を求めるため初期値を−10から10までの間を0.01ずつ変えていき解を出すことにした。
+そのコードが以下である。
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]
+for(n=0; n<2000; n++){
+    ans = -10.0 + n * 0.01;
+    ans_new = formula1(ans);
+    while(fabs(ans-ans_new) > EPS){
+        ans_new = ans;
+        ans = formula1(ans_new);
+    }
+
+    for(int i=0; i<=num_values; i++){
+        if(fabs(ans-ans_old[i]) > EPS){
+            discrimination = 1;
+        } else {
+            discrimination = 0;
+            break;
+        }
+    }
+
+    if(discrimination == 1){
+        ans_old[num_values] = ans;
+        num_values++;
+        cout << ans << endl;
+    }
+}
+\end{lstlisting}
+
+\section{結果}
+
+\section{考察}
+今回、ニュートン法のアルゴリズムを実装したことによって非線形方程式の近似解を求めることが
+できるので、マニュピレータの制御などが可能になった。
+\section{付録・プログラム}
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+#define EPS 1e-7
+
+double formula1(double ans)
+{
+        return (ans-(pow(ans,3.0)+ans+1.0)/(3.0*pow(ans,2.0)+1.0));
+    }
+
+    double formula2(double ans)
+    {
+            return (ans-(3*pow(ans,3.0)-6*pow(ans,2.0)-3*ans+6)/(9*pow(ans,2.0)-12*ans-3));
+        }
+
+        double formula3(double ans)
+        {
+                return (ans-(2*sin(ans)-ans)/(2*cos(ans)-1));
+            }
+
+            double formula4(double ans)
+            {
+                    return (ans-(cos(ans)-pow(ans,2.0))/(-sin(ans)-2*ans));
+                }
+
+                double formula5(double ans)
+                {
+                        return (ans-(exp(ans)+ans)/(exp(ans)+1)); 
+                    }
+
+                    //double divergence(double ans){
+
+
+                        int main(void)
+                        {
+                                int n=0, select, num_values=0, discrimination;
+                                    double ans, ans_new, ans_old[200];
+
+                                        for(int i=0; i<200; i++) ans_old[i] = 1e-6;
+
+                                    cout << " %K%e!<%H%sK!$G6a;w$9$k$N$O$I$l$K$7$^$9$+!)
+\end{document}
